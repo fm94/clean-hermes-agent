@@ -69,6 +69,9 @@ that was removed; nothing else is affected.
 
 - **At the clone:** `git --version`, then check proxy settings
   (`HTTP_PROXY`/`HTTPS_PROXY`) and that `github.com:443` is reachable.
+- **The checkout dies again mid-way:** the endpoint agent normally records the
+  rule and the exact file it blocked. Send that path back — one real file name
+  beats any amount of guessing at the pattern.
 - **At the uv step:** run the evidence collector and send back the log:
 
   ```powershell
