@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # One-shot sync: pristine upstream -> sanitized mirror -> fork -> submodule.
 #
-#   tools/sync.sh            # update upstream to its remote tip, rebuild, publish
-#   tools/sync.sh --dry-run  # fetch upstream and report, change nothing else
+#   tools/sync.sh            # update upstream, rebuild, publish, bump gitlink
+#   tools/sync.sh --dry-run  # fetch and report only, mutate nothing
 #
 # The superproject pins `upstream` (pristine, update=none for clones) and
 # `hermes` (the sanitized fork). Only the sanitized history is ever published.
@@ -15,14 +15,25 @@ DRY=0
 say() { printf '\n== %s ==\n' "$1"; }
 
 say "upstream"
-git submodule update --remote --checkout upstream
+git -C upstream fetch -q origin main
 UP=$(git -C upstream rev-parse --short HEAD)
-echo "pristine upstream at $UP"
+NEW=$(git -C upstream rev-parse --short origin/main)
+echo "checked out $UP, origin/main $NEW"
 
 if [ "$DRY" = 1 ]; then
-    echo "dry run: would rebuild safe/, push main+sanitized, and bump hermes/"
+    if [ "$UP" = "$NEW" ]; then echo "upstream is current"; else echo "upstream would move $UP -> $NEW"; fi
+    echo "dry run: would rebuild safe/, push main+sanitized, bump hermes/"
     exit 0
 fi
+
+if [ "$UP" = "$NEW" ] && [ "$(git -C safe rev-parse HEAD 2>/dev/null)" = "$(git -C hermes rev-parse HEAD)" ]; then
+    echo "already in sync, nothing to do"
+    exit 0
+fi
+
+say "fast-forward upstream"
+git submodule update --remote --checkout upstream
+UP=$(git -C upstream rev-parse --short HEAD)
 
 say "rebuild"
 tools/release.sh
