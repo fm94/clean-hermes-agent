@@ -45,9 +45,9 @@ echo "fork now at $(git -C safe rev-parse --short HEAD)"
 
 say "submodule"
 git submodule update --remote --checkout hermes
-git add hermes
+git add hermes upstream
 if git diff --cached --quiet; then
-    echo "hermes/ already current"
+    echo "submodule pins already current"
 else
     git commit -q -m "sync: hermes $(git -C hermes rev-parse --short HEAD) (upstream $UP)"
     echo "committed gitlink bump"
