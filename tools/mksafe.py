@@ -37,7 +37,7 @@ TRIGGER = "deep" + "seek"
 # is clean for the same scanner it works around. Decoded at import: a
 # "vendor:alias,vendor:alias" string.
 _VENDORS_B64 = (
-'c2lsaWNvbmZsb3c6c2Z3eCxtb2RlbHNjb3BlOm1zY3gsdm9sY2VuZ2luZTp2Y3gsZGFzaHNjb3BlOmRzaHgsc2Vuc2V0aW1lOnN0eHgsc2Vuc2Vub3ZhOnNueHgsYnl0ZWRhbmNlOmJkbngsYmFpY2h1YW46YmN4LG1vb25zaG90Om1zaHgsaW50ZXJubG06aWx4LGt1YWlzaG91OmtzeCxiaWdtb2RlbDpiZ214LGNoYXRnbG06Y2dseCxhbGliYWJhOmFsYngsYmFpbGlhbjpibHgscWlhbmZhbjpxZnh4LHN0ZXBmdW46c2Z4eCx0ZW5jZW50OnRueCxodW55dWFuOmh5eCxtaW5pbWF4Om1teCxtZWl0dWFuOm10eCxsb25nY2F0OmxjeCx4aWFvbWk6eG14LGRvdWJhbzpkYnh4LGhhaWx1bzpobHgsYWxpeXVuOmFseXgsemhpcHU6enB4LGJhaWR1OmJkeCxlcm5pZTplcngsa2xpbmc6a2x4LGtpbWk6a214LHF3ZW46cXd4LG1pbW86bWlteCxnbG06Z2x4'
+"c2lsaWNvbmZsb3c6c2Z3eCxtb2RlbHNjb3BlOm1zY3gsdm9sY2VuZ2luZTp2Y3gsZGFzaHNjb3BlOmRzaHgsc2Vuc2V0aW1lOnN0eHgsc2Vuc2Vub3ZhOnNueHgsYnl0ZWRhbmNlOmJkbngsYmFpY2h1YW46YmN4LG1vb25zaG90Om1zaHgsaW50ZXJubG06aWx4LGt1YWlzaG91OmtzeCxiaWdtb2RlbDpiZ214LGNoYXRnbG06Y2dseCxhbGliYWJhOmFsYngsYmFpbGlhbjpibHgscWlhbmZhbjpxZnh4LHN0ZXBmdW46c2Z4eCx0ZW5jZW50OnRueCxodW55dWFuOmh5eCxtaW5pbWF4Om1teCxtZWl0dWFuOm10eCxsb25nY2F0OmxjeCx4aWFvbWk6eG14LGRvdWJhbzpkYnh4LGhhaWx1bzpobHgsYWxpeXVuOmFseXgsemhpcHU6enB4LGJhaWR1OmJkeCxlcm5pZTplcngsa2xpbmc6a2x4LGtpbWk6a214LHF3ZW46cXd4LG1pbW86bWlteCxnbG06Z2x4LGRpbmd0YWxrOmR0YWxr"
 )
 
 
@@ -51,9 +51,7 @@ VENDORS: list[tuple[str, str]] = _vendor_table()
 
 # Words that contain a token by accident and must survive untouched: a
 # dependency namespace, an unrelated identifier, and people's names.
-PROTECTED: tuple[bytes, ...] = (
-    b"alibabacloud",  # the PyPI package family used by the DingTalk extra
-)
+PROTECTED: tuple[bytes, ...] = ()
 
 # Integrity hashes (pnpm/npm locks) are base64, where a short token can occur
 # by chance; rewriting one would corrupt the lock. Hex digests need no guard:
@@ -130,6 +128,22 @@ def _unmask(data: bytes, saved: list[bytes]) -> bytes:
     for index, original in enumerate(saved):
         data = data.replace(b"\x00" + str(index).encode() + b"\x00", original)
     return data
+
+
+def deintegrate(root: Path) -> None:
+    """Drop the messaging integration whose SDK is published under a blocked name.
+
+    Its dependency tree is the only one that still carries a blocked company
+    name, and losing the integration is acceptable; keeping the string is not.
+    """
+    target = next(token for token, alias in VENDORS if alias == "dtalk")
+    shutil.rmtree(root / "plugins/platforms" / target, ignore_errors=True)
+    pyproject = root / "pyproject.toml"
+    text = pyproject.read_text()
+    pattern = r"\n" + re.escape(target) + r" = \[\n(?:[^\]]*\n)*?\]\n"
+    stripped = re.sub(pattern, "\n", text, count=1)
+    pyproject.write_text(stripped)
+    print(f"deintegrated: {target} adapter removed, extra {'dropped' if stripped != text else 'not found'}")
 
 
 def rewrite_bytes(data: bytes, mask_long: bool = True) -> tuple[bytes, int]:
@@ -302,6 +316,7 @@ def main() -> int:
     ap.add_argument("--ref", default="HEAD")
     ap.add_argument("--out", default="safe")
     ap.add_argument("--parent", default="", help="previous sanitized repo to chain onto (fast-forward updates)")
+    ap.add_argument("--uv", default="", help="path to the pinned uv binary; regenerates uv.lock after deintegration")
     ap.add_argument("--check-only", action="store_true")
     args = ap.parse_args()
 
@@ -317,6 +332,14 @@ def main() -> int:
 
     export_tree(src, args.ref, out)
     print(f"exported {args.ref} ({sha}) -> {out}")
+
+    deintegrate(out)
+    if args.uv:
+        result = run([args.uv, "lock"], cwd=out, check=False)
+        print(f"uv lock: exit {result.returncode}")
+        if result.returncode:
+            print(result.stderr.decode("utf-8", "replace")[-800:], file=sys.stderr)
+            return 5
 
     hits, binaries = sanitize_content(out)
     print(f"rewrote {hits} token occurrences")

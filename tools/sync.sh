@@ -36,7 +36,13 @@ git submodule update --remote --checkout upstream
 UP=$(git -C upstream rev-parse --short HEAD)
 
 say "rebuild"
-tools/release.sh
+UV_BIN="${UV_BIN:-.cache/uv-0.13.5/uv}"
+if [ -x "$UV_BIN" ]; then
+    tools/release.sh --uv "$UV_BIN"
+else
+    echo "warning: $UV_BIN missing; uv.lock will keep the removed extra's packages" >&2
+    tools/release.sh
+fi
 
 say "publish"
 git -C safe push origin main:refs/heads/main

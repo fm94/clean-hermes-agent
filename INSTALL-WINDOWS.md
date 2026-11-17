@@ -62,8 +62,8 @@ hermes doctor
 hermes model
 ```
 
-`hermes model` is where you pick a provider. Any provider works except the one
-that was removed; nothing else is affected.
+`hermes model` is where you pick a provider. One chat platform and the renamed
+model providers are gone; every other provider and platform is unaffected.
 
 ## 4. If the install fails
 
