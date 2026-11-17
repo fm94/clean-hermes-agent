@@ -32,15 +32,17 @@ port-hermes/                 this repo (Mac-side workspace)
 ## The published branch
 
 [`fm94/hermes-agent`](https://github.com/fm94/hermes-agent) holds a rebuilt
-history — root `8fa7ab27`, then one commit per sync (currently `810f976b`) — on
+history — a fresh root commit per sanitization pass (currently `8763b9b6`) — on
 both `main` and `sanitized` (same commit; `main` is what a default clone gets,
 `sanitized` names it explicitly). The fork's original upstream history was
 replaced: it was a fresh fork with no work on it, and keeping that history would
 put the blocked token back in every clone.
 
 - 26,284 files, identical to upstream `aaec1339` apart from the rename.
-- 3,405 token occurrences rewritten; 9 paths renamed (provider plugin, 4 catalog
-  entries, 3 tests).
+- 34 vendor names rewritten in every case and separator form, across provider
+  plugins, model catalogs, API hosts, env vars, docs, tests and asset paths.
+- One third-party package namespace is preserved because it is a real
+  dependency of the DingTalk extra; renaming it would break `uv.lock`.
 - Verified clean: working tree, paths, all 26,995 git objects, raw bytes.
 - The renamed `dsx` provider is inert (placeholder base URL); every other
   provider is untouched.
