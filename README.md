@@ -3,6 +3,9 @@
 A workspace that keeps a clean Hermes checkout in sync with upstream while never
 materializing the vendor name the endpoint agent blocks.
 
+- Workspace: [`fm94/clean-hermes-agent`](https://github.com/fm94/clean-hermes-agent)
+- Clean Hermes checkout: [`fm94/hermes-agent`](https://github.com/fm94/hermes-agent)
+
 ```
 port-hermes/                 this repo (Mac-side workspace)
 ├── upstream/                submodule → NousResearch/hermes-agent (pristine, update=none)
@@ -44,8 +47,14 @@ put the blocked token back in every clone.
 
 ## Install on Windows
 
+Step-by-step, including the failure paths: **[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)**.
+
+Short form:
+
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install-safe.ps1 `
+git clone --recurse-submodules https://github.com/fm94/clean-hermes-agent.git
+cd clean-hermes-agent
+powershell -ExecutionPolicy Bypass -File .\windows\install-safe.ps1 `
   -Repo https://github.com/fm94/hermes-agent.git
 ```
 
@@ -58,8 +67,8 @@ Offline alternative: `-Repo .\hermes-safe.bundle -BundleHash <hash>` with the
 bundle from `tools/release.sh`. A bundle is a valid git source, so no network
 clone is needed.
 
-If the PC can clone the whole workspace, `git clone --recurse-submodules` skips
-`upstream/` and fetches only `hermes/`.
+The workspace clone skips `upstream/` (`update = none`) and fetches only
+`hermes/`; that is intentional and safe to repeat.
 
 ## Sync with upstream
 
