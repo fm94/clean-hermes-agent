@@ -23,9 +23,12 @@ fi
 
 python3 tools/mksafe.py --src upstream --out safe-next "${PARENT[@]}" ${ARGS[@]+"${ARGS[@]}"}
 
+ORIGIN=$(git -C safe remote get-url origin 2>/dev/null || true)
+
 rm -rf safe.prev
 [ -d safe ] && mv safe safe.prev
 mv safe-next safe
+[ -n "$ORIGIN" ] && git -C safe remote add origin "$ORIGIN"
 
 rm -f hermes-safe.bundle
 git -C safe bundle create ../hermes-safe.bundle --all
