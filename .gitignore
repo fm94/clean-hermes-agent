@@ -1,0 +1,6 @@
+/safe/
+/safe-next/
+/safe.prev/
+*.bundle
+*.bundle.sha256
+.DS_Store

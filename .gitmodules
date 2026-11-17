@@ -1,0 +1,9 @@
+[submodule "upstream"]
+	path = upstream
+	url = https://github.com/NousResearch/hermes-agent.git
+	branch = main
+	update = none
+[submodule "hermes"]
+	path = hermes
+	url = git@github.com:fm94/hermes-agent.git
+	branch = sanitized
