@@ -28,15 +28,16 @@ port-hermes/                 this repo (Mac-side workspace)
 
 ## The published branch
 
-[`fm94/hermes-agent`](https://github.com/fm94/hermes-agent) now holds a single
-root commit, `8fa7ab27`, on both `main` and `sanitized` (same commit; `main` is
-what a default clone gets, `sanitized` names it explicitly). The fork's original
-upstream history was replaced — it was a fresh fork with no work on it, and
-keeping that history would put the blocked token back in every clone.
+[`fm94/hermes-agent`](https://github.com/fm94/hermes-agent) holds a rebuilt
+history — root `8fa7ab27`, then one commit per sync (currently `810f976b`) — on
+both `main` and `sanitized` (same commit; `main` is what a default clone gets,
+`sanitized` names it explicitly). The fork's original upstream history was
+replaced: it was a fresh fork with no work on it, and keeping that history would
+put the blocked token back in every clone.
 
-- 26,155 files, identical to upstream `0309b005235b` apart from the rename.
-- 3,385 token occurrences across 445 files rewritten; 9 paths renamed (provider
-  plugin, 4 catalog entries, 3 tests).
+- 26,284 files, identical to upstream `aaec1339` apart from the rename.
+- 3,405 token occurrences rewritten; 9 paths renamed (provider plugin, 4 catalog
+  entries, 3 tests).
 - Verified clean: working tree, paths, all 26,995 git objects, raw bytes.
 - The renamed `dsx` provider is inert (placeholder base URL); every other
   provider is untouched.
